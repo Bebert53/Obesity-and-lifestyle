@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solutions - Dashboard</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #f0f0f0;
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5em;
+        }
+
+        .dashboard {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            padding: 40px;
+        }
+
+        .widget {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            height: auto;
+            aspect-ratio: 16/10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 1;
+        }
+
+        .widget-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #2193b0;
+            transition: all 0.3s ease;
+        }
+
+        .widget-title {
+            font-size: 1.2em;
+            color: #4a5568;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .widget:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(33, 147, 176, 0.2);
+            background: white;
+        }
+
+        .widget:hover .widget-icon {
+            transform: scale(1.1);
+            color: #6dd5ed;
+        }
+
+        .widget:hover .widget-title {
+            color: #6dd5ed;
+        }
+
+        .problematique-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: 600;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 15px rgba(33, 147, 176, 0.3);
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .problematique-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(33, 147, 176, 0.4);
+            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        }
+
+        .close-btn {
+            display: none;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            background: #2193b0;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1002;
+            transition: all 0.3s ease;
+            padding: 0;
+            line-height: 35px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .close-btn:hover {
+            background: #6dd5ed;
+            transform: scale(1.1);
+        }
+
+        .widget.expanded {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            height: 90%;
+            padding: 40px;
+            max-width: 1200px;
+            max-height: 900px;
+            z-index: 1000;
+        }
+
+        .widget.expanded .close-btn {
+            display: block;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            display: none;
+        }
+
+        .widget-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+
+        .widget-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .widget-expanded-content {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .widget.expanded .widget-preview {
+            display: none;
+        }
+
+        .widget.expanded .widget-expanded-content {
+            display: block;
+        }
+
+        .widget-expanded-title {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
+            color: #2193b0;
+            font-weight: bold;
+            z-index: 1002;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px 20px 20px 20px;
+            position: relative;
+        }
+
+        .chart-container svg {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 20px;
+                gap: 20px;
+                grid-template-columns: 1fr;
+            }
+
+            .widget {
+                min-height: 200px;
+            }
+
+            .widget-icon {
+                font-size: 2em;
+            }
+
+            .widget-title {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Solutions : Vers un mode de vie plus équilibré</h1>
+    <p class="subtitle">
+        Cette page présente différentes solutions pour adopter un mode de vie plus sain.
+        L'objectif est de démontrer qu'il est possible de mieux s'alimenter sans manger moins :
+        en choisissant des aliments à faible densité énergétique et en favorisant l'activité physique.
+    </p>
+
+    <div style="text-align: center; margin-bottom: 40px;">
+        <a href="problematique.html" class="problematique-btn">Voir la Problématique</a>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="dashboard">
+        <!-- Widget 1 : Comparaison kcal -->
+        <div class="widget" id="widget-kcal" data-widget="kcal">
+            <button class="close-btn">✕</button>
+            <div class="widget-content">
+                <div class="widget-preview">
+                    <i class="widget-icon fas fa-balance-scale"></i>
+                    <h3 class="widget-title">Quantité vs énergie (kcal)</h3>
+                </div>
+                <div class="widget-expanded-content">
+                    <h2 class="widget-expanded-title">Quantité vs énergie (kcal)</h2>
+                    <div class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget 2 : Sport vs alimentation -->
+        <div class="widget" id="widget-sportfood" data-widget="sportfood">
+            <button class="close-btn">✕</button>
+            <div class="widget-content">
+                <div class="widget-preview">
+                    <i class="widget-icon fas fa-dumbbell"></i>
+                    <h3 class="widget-title">Activité physique et calories</h3>
+                </div>
+                <div class="widget-expanded-content">
+                    <h2 class="widget-expanded-title">Nuage de point des calories brulées lors d'une séance de sport en fonction du rythme cardiaque moyen et de la durée de la séance</h2>
+                    <div class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget 3 : IMC et prévention -->
+        <div class="widget" id="widget-imc" data-widget="imc">
+            <button class="close-btn">✕</button>
+            <div class="widget-content">
+                <div class="widget-preview">
+                    <i class="widget-icon fas fa-heartbeat"></i>
+                    <h3 class="widget-title">Équilibre et IMC</h3>
+                </div>
+                <div class="widget-expanded-content">
+                    <h2 class="widget-expanded-title">Équilibre et IMC</h2>
+                    <div class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts des widgets -->
+    <script src="src/widgets/kcalCompare.js"></script>
+    <script src="src/widgets/sportVsFood.js"></script>
+    <script src="src/widgets/imcPrediction.js"></script>
+
+    <!-- Script de gestion d’interaction (identique à problematique.html) -->
+    <script>
+        const widgets = d3.selectAll('.widget');
+        const overlay = d3.select('#overlay');
+
+        function expandWidget() {
+            const widget = d3.select(this);
+            if (!widget.classed('expanded')) {
+                widgets.classed('expanded', false);
+                widget.classed('expanded', true);
+                overlay.style('display', 'block');
+            }
+        }
+
+        function closeWidget(event) {
+            event.stopPropagation();
+            const widget = d3.select(this.parentElement);
+            widget.classed('expanded', false);
+            overlay.style('display', 'none');
+        }
+
+        widgets.on('click', expandWidget);
+        d3.selectAll('.close-btn').on('click', closeWidget);
+        overlay.on('click', () => {
+            widgets.classed('expanded', false);
+            overlay.style('display', 'none');
+        });
+    </script>
+</body>
+</html>

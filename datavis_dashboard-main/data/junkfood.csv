@@ -1,0 +1,12 @@
+categorie,proportion_percent,type,avg_times_per_week,notes
+Fast-food,27,Aliment,1.3,"Repas pris au restaurant rapide ou drive, portion souvent riche en graisses/sucres."
+Boissons sucrées,32,Aliment,10.0,"Sodas, boissons sucrées consommées en moyenne plusieurs fois par semaine."
+Snacks salés,18,Aliment,3.5,"Chips, biscuits apéritifs, en-cas entre les repas."
+Viennoiseries et pâtisseries,25,Aliment,4.0,"Petit-déjeuner ou goûter sucré, pâtisseries achetées hors foyer ou à la maison."
+Plats préparés,14,Aliment,1.6,"Plats industriels réchauffés, pizzas surgelées, plats micro-ondables."
+Produits ultra-transformés,35,Aliment,12.0,"Regroupe aliments industriels prêts-à-manger, snacks sucrés/salés, plats préparés."
+Grignotage entre les repas,41,Comportement,7.0,Collations non planifiées (sucrées ou salées) — fort marqueur de 'mal-bouffe'.
+Repas devant la télévision,38,Comportement,5.0,Repas pris en regardant écran — associé à une surconsommation.
+Saut du petit-déjeuner,25,Comportement,2.1,Omettre un repas favorise grignotage ultérieur et choix aliments pauvres.
+Livraison/commande à domicile,16,Comportement,0.9,"Commandes de plats, fast-food ou pizza, fréquemment riches en calories."
+"Repas pris hors domicile (boulangerie, snack...)",29,Comportement,3.7,Repas achetés à l'extérieur — souvent plus gras/sucrés que repas faits maison.
